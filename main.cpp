@@ -121,7 +121,7 @@ template <typename T, typename received_args>
 struct calculator {
 	static decltype(auto) calc(T& t, received_args& c_l) {
 		
-//		cout << "calc 1\n";
+		//cout << "calc 1\n";
 		return t;
 	}
 };
@@ -130,16 +130,16 @@ template <size_t no, typename received_args>
 struct calculator<place_holder<no>&, received_args> {
 	static decltype(auto) calc(place_holder<no>& p_h, received_args& c_l) {
 		
-//		cout << "calc 2\n";
+		//cout << "calc 2\n";
 		return get<no - 1>(c_l);
 	}
 };
 
-template <typename F, typename M, typename received_args>
-struct calculator<bind_function<F, M>&, received_args> {
-	static decltype(auto) calc(bind_function<F, M>& b_f, received_args& c_l) {
+template <typename F, typename... M, typename received_args>
+struct calculator<bind_function<F, M...>&, received_args> {
+	static decltype(auto) calc(bind_function<F, M...>& b_f, received_args& c_l) {
 		
-//		cout << "calc 3\n";
+		//cout << "calc 3\n";
 		return call(b_f, c_l);
 	}
 };
@@ -154,6 +154,7 @@ template <typename F, int Number, typename saved_args, typename received_args, t
 struct bind_function_executer <F, Number, true, saved_args, received_args, Args...> {
 	
 	static auto execute(F f, saved_args& cl_1, received_args& cl_2, Args&&... args) {
+		
 		return f(args...);
 	}
 	
@@ -274,6 +275,14 @@ int test_6(int& c) {
 	return c += 4;
 }
 
+int f(int w, int e, int r) {
+	return w + e + r;
+}
+
+int sum(int w, int e) {
+	return w + e;
+}
+
 int main() {
     compile_list<place_holder<1>&> cl_9999(_1);
     
@@ -339,6 +348,11 @@ int main() {
     cout << c << "\n";
     
     cout << "\n";
+    
+    cout << "############\n";
+    
+    cout << bind(f, 42, _1, bind(sum, _1, _2))(123, 345) << "   !!!\n";
+    
     
     return 0;
 }
