@@ -38,15 +38,8 @@ struct compile_list<First, Other...> : public compile_list<Other...> {
 	value_type value;
 	base_type& base = static_cast<base_type&>(*this);
 	
-	//std::forward<Args>(args)...
-	
-//	compile_list(First&& first, Other&&... other)
-//	: compile_list<Other...>(forward<Other>(other)...), value(forward<First>(first)) {
-//	}
-	
-	
-	compile_list(First first, Other&&... other)
-	: compile_list<Other...>(forward<Other>(other)...), value(first) {
+	compile_list(First&& first, Other&&... other)
+	: compile_list<Other...>(forward<Other>(other)...), value(forward<First>(first)) {
 	}
 	
 };
@@ -175,13 +168,10 @@ template <typename F, int Number, typename saved_args, typename received_args, t
 struct bind_function_executer <F, Number, false, saved_args, received_args, Args...> {
 	
 	
-	
 	static auto execute(F f, saved_args& cl_1, received_args& cl_2, Args&&... args) {
 		typedef decltype(calculator<decltype(get<Number>(cl_1)), received_args>::calc(get<Number>(cl_1), cl_2 )) next_type;
 		
 		typedef typename std::remove_reference<next_type>::type real_next_type;
-		
-//		real_next_type next = calculator<decltype(get<Number>(cl_1)), received_args>::calc(get<Number>(cl_1), cl_2 );
 		
 		return bind_function_executer<F, Number + 1, (Number + 1) == cl_1.size,
 											saved_args, received_args, Args...,
@@ -280,6 +270,10 @@ int test_5(my_obj& c1, my_obj& c2) {
 	return c1.val * c2.val;
 }
 
+int test_6(int& c) {
+	return c += 4;
+}
+
 int main() {
     compile_list<place_holder<1>&> cl_9999(_1);
     
@@ -304,6 +298,8 @@ int main() {
     
     cout << call(test_1, cl_4) << "\n";
     
+    cout << "f2:\n";
+    
     auto f1 = bind(test_4, 3, 4, -8);
     
     cout << f1() << "\n";
@@ -314,7 +310,7 @@ int main() {
     
     cout << "f3:\n";
     auto f3 = bind(test_2, bind(test_2, _1));
-    cout << f3(45, 21);
+    cout << f3(45, 21) << "\n";
     
     cout << "f3_1:\n";
     auto f3_1 = bind(test_5, my_obj(2), my_obj(3));
@@ -330,6 +326,19 @@ int main() {
     
     cout << f4(my_obj(6), my_obj(7)) << "\n";
     
+    cout << "----------\n";
+    
+    cout << "f5:\n";
+    int c = 9;
+    auto f5 = bind(test_6, c);
+    
+    cout << f5() << "\n";
+    
+    cout << f5() << " " << f5() << "\n";
+    
+    cout << c << "\n";
+    
+    cout << "\n";
     
     return 0;
 }
